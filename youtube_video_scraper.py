@@ -1,10 +1,11 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import re
+import random
 
 # list of all user names: done
 # interpolate the channel name into most popular url
-# scrape for titles of videos/urls
+# scrape for titles of videos/urls: done
 # go to each link and do this VVVVVV
 
 
@@ -26,9 +27,17 @@ DK_YOUTUBER_NAMES = ['iamkareno', 'theepatrickstarrr', 'wwwengie', 'bubzbeauty',
 'BritPopPrincess', 'DulceCandy87', 'AndreasChoice', 'macbarbie07', 'ThatsHeart', 'SmartistaBeauty', NYMA_TANG, 'beautycrush', ALYSSA_FOREVER, JASMINE_BROWN, 'Cydbeats', 
 'Irishcel507', 'clothesencounters', 'TTLYTEALA', 'makeupbytinayong']
 
+# for testing
+SAMPLE_YOUTUBE_NAMES = []
+
+for _ in range(0, 10):
+	SAMPLE_YOUTUBE_NAMES.append(random.choice(DK_YOUTUBER_NAMES + WP_YOUTUBER_NAMES))
+
+print(SAMPLE_YOUTUBE_NAMES)
+
 #INDIVIDUAL YOUTUBE LINK PARSING
 
-youtube_path = "https://www.youtube.com/watch?v=KNXou4o4GaY" 
+youtube_path = "https://www.youtube.com/watch?time_continue=1&v=IlCmIBMPhp8" 
 page = urlopen(youtube_path)
 soup = BeautifulSoup(page, 'lxml')
 soup.prettify()
@@ -53,6 +62,6 @@ del likes_count[1]
 print("dislikes:", int(dislike_count[0]))
 print("likes:", int(likes_count[0]))
 print('views:', views_count)
-print(len(WP_YOUTUBER_NAMES))
-print(len(DK_YOUTUBER_NAMES))
+# print(len(WP_YOUTUBER_NAMES))
+# print(len(DK_YOUTUBER_NAMES))
 
