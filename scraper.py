@@ -74,7 +74,7 @@ def main():
 			link = URL + link #should have been 10 user video links, might be more?
 			all_atts.append(get_attributes(link)) #was saving like a variable instead of a list, test this
 		
-		youtuber = create_youtuber_csv(name, all_atts)
+		# youtuber = create_youtuber_csv(name, all_atts)
 
 		# #	combine the datasets in WK/DP
 		# insert_in_hue_dataset(youtuber)
@@ -169,15 +169,15 @@ def get_attributes(name):
 		video_soup.prettify()
 		
 		#parses through webpage and cleans data to find view count of video
-		spans = video_soup.find_all('span', {'class' : "view-count style-scope yt-view-count-renderer"})
+		spans = str(video_soup.find_all('span', {'class' : "view-count style-scope yt-view-count-renderer"}))
 		print(spans)
 
 		#takes only the text in the span element
-		lines = [span.get_text() for span in spans]
-		print(lines)
+		# lines = [span.get_text() for span in spans]
+		# print(lines)
 
 		#cleaning the text of symbols and integers
-		dirty_views_count = re.sub('[^0-9]','', lines)
+		dirty_views_count = re.sub('[^0-9]','', spans)
 		print(dirty_views_count)
 
 		#returns a double count, gets rid of the repeat amount
@@ -204,16 +204,16 @@ def get_attributes(name):
 
 	# return all_atts
 
-def create_user_csv(name, all_atts):
-	#might not need to call this since i append to an empty list with all attributes in main
-	all_atts = get_attributes(name) 
+# def create_user_csv(name, all_atts):
+# 	#might not need to call this since i append to an empty list with all attributes in main
+# 	all_atts = get_attributes(name) 
 
 	
-	with open('{}.csv', 'a').format(name) as csvfile:
-            filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
-            print(name)
-          	filewriter.writerow([all_atts])
+# 	with open('{}.csv', 'a').format(name) as csvfile:
+#             filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
+#             filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
+#             print(name)
+#           	filewriter.writerow([all_atts])
 
 
 
