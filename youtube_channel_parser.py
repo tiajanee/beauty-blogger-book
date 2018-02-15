@@ -7,7 +7,6 @@ import pandas as pd
 import csv
 
 
-#JAMES_CHARLES = 'UCucot-Zp428OwkyRm2I7v2Q'
 
 PONY_SYNDROME = 'UCT-_4GqC-yLY1xtTHhwY0hA'
 JAMES_CHARLES = 'UCucot-Zp428OwkyRm2I7v2Q'
@@ -31,6 +30,7 @@ def main():
     names = WP_YOUTUBER_NAMES
     #full list of YT users
     #names = WP_YOUTUBER_NAMES + DK_YOUTUBER_NAMES
+
     for name in names:
         create_channel_url(name)
         get_youtube_videos(name)

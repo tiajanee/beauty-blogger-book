@@ -42,7 +42,8 @@ page = urlopen(youtube_path)
 soup = BeautifulSoup(page, 'lxml')
 soup.prettify()
 #parses through webpage and cleans data to find view count of video
-un_views_count = str(soup.find('div', class_="watch-view-count"))
+un_views_count = str(soup.find('span', class_="view-count style-scope yt-view-count-renderer"))
+print(un_views_count)
 views_count = re.sub('[^0-9]','', un_views_count)
 views_count = re.sub(',', '', views_count)
 
