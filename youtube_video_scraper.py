@@ -1,7 +1,11 @@
 from urllib.request import urlopen
+from urllib.request import build_opener
 from bs4 import BeautifulSoup
 import re
 import random
+import pprint
+import httplib2
+
 
 # list of all user names: done
 # interpolate the channel name into most popular url
@@ -33,36 +37,43 @@ SAMPLE_YOUTUBE_NAMES = []
 for _ in range(0, 10):
 	SAMPLE_YOUTUBE_NAMES.append(random.choice(DK_YOUTUBER_NAMES + WP_YOUTUBER_NAMES))
 
-print(SAMPLE_YOUTUBE_NAMES)
+
 
 #INDIVIDUAL YOUTUBE LINK PARSING
 
-youtube_path = "https://www.youtube.com/watch?time_continue=1&v=IlCmIBMPhp8" 
+youtube_path = "https://www.youtube.com/watch?v=DBZKxXX70NM" 
 page = urlopen(youtube_path)
-soup = BeautifulSoup(page, 'lxml')
+soup = BeautifulSoup(page, 'html.parser')
 soup.prettify()
+#pprint.pprint(soup)
 #parses through webpage and cleans data to find view count of video
-un_views_count = str(soup.find('span', class_="view-count style-scope yt-view-count-renderer"))
-print(un_views_count)
-views_count = re.sub('[^0-9]','', un_views_count)
+# un_views_count = soup.find_all('div',{'id':'count'})
+# print(un_views_count)
+# for view in un_views_count:
+# 	count =  view.get("span")
+# 	print(count)
+
+type = str(soup.find('span',attrs={"class":"stat view-count"}))
+print(type)
+
+views_count = re.sub('[^0-9]','', type)
 views_count = re.sub(',', '', views_count)
+print(views_count)
 
-#parses through webpage and cleans data to get dislike counts
-un_dislike_count = str(soup.find('button', title="I dislike this", type="button"))
-dislike_count =  re.sub('[^0-9,]',' ', un_dislike_count)
-dislike_count = re.sub(',', '', dislike_count).split()
-del dislike_count[1]
+# #parses through webpage and cleans data to get dislike counts
+# un_dislike_count = str(soup.find('button', title="I dislike this", type="button"))
+# dislike_count =  re.sub('[^0-9,]',' ', un_dislike_count)
+# dislike_count = re.sub(',', '', dislike_count).split()
 
 
-#parses through webpage and cleans data to get likes counts
-un_likes_amount = str(soup.find('button', title="I like this", type='button'))
-likes_count =  re.sub('[^0-9,]',' ', un_likes_amount)
-likes_count = re.sub(',', '', likes_count).split()
-del likes_count[1]
+# #parses through webpage and cleans data to get likes counts
+# un_likes_amount = str(soup.find('button', title="I like this", type='button'))
+# likes_count =  re.sub('[^0-9,]',' ', un_likes_amount)
+# likes_count = re.sub(',', '', likes_count).split()
 
-print("dislikes:", int(dislike_count[0]))
-print("likes:", int(likes_count[0]))
-print('views:', views_count)
+# print("dislikes:", int(dislike_count[0]))
+# print("likes:", int(likes_count[0]))
+# print('views:', views_count)
 # print(len(WP_YOUTUBER_NAMES))
 # print(len(DK_YOUTUBER_NAMES))
 
