@@ -41,19 +41,20 @@ for _ in range(0, 10):
 
 #INDIVIDUAL YOUTUBE LINK PARSING
 
-youtube_path = "https://www.youtube.com/watch?v=DBZKxXX70NM" 
+youtube_path = "https://www.youtube.com/watch?v=yLBHooqolaw" 
 page = urlopen(youtube_path)
 soup = BeautifulSoup(page, 'html.parser')
 soup.prettify()
-#pprint.pprint(soup)
+
+print(soup)
 #parses through webpage and cleans data to find view count of video
 # un_views_count = soup.find_all('div',{'id':'count'})
 # print(un_views_count)
 # for view in un_views_count:
-# 	count =  view.get("span")
+# 	count =  view.get("span") <div class="watch-view-count">9,718,233 views</div>
 # 	print(count)
 
-type = str(soup.find('span',attrs={"class":"stat view-count"}))
+type = str(soup.find('div', 'watch-view-count'))
 print(type)
 
 views_count = re.sub('[^0-9]','', type)
