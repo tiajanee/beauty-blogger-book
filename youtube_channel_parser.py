@@ -41,7 +41,7 @@ def main():
 def create_channel_url(name):
     #debugged, works, need to add comments
     try:
-        youtube = "https://www.youtube.com/user/{}/videos?sort=p&view=0&flow=grid".format(name)
+        youtube = "https://Www.youtube.com/user/{}/videos?sort=p&view=0&flow=grid".format(name)
         attempt = urlopen(youtube)
 
     except HTTPError:
