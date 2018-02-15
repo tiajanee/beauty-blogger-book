@@ -60,7 +60,7 @@ def main():
 	#create_datasets(DATASETS)
 
 	# specify list
-	names = DK_YOUTUBER_NAMES[:1]   #+ WP_YOUTUBER_NAMES
+	names = DK_YOUTUBER_NAMES[:3] + WP_YOUTUBER_NAMES[:3]
 	for name in names:
 		
 		
@@ -69,19 +69,14 @@ def main():
 		top_10 = get_top_10(url)
 		full_att_list = get_attributes(url)
 		create_youtuber_csv(url, name, full_att_list)
-
 		insert_in_hue_dataset(name, full_att_list)
-
-		# #combine the datasets in all
-		# insert_in_all_dataset(youtuber, url(name))
-
+		insert_in_all_dataset(name, full_att_list)
 
 def scrape_top_videos(name):
 	'''
 	gets all embedded video links in user's channel, appended in desc popularity
 
 	'''
-
 
 	#reads in HTML to parse
 	page = urlopen(name).read()
@@ -156,12 +151,16 @@ def get_attributes(name):
 		youtuber_list.append(youtube_path)
 		web_page = urlopen(youtube_path)
 		video_soup = BeautifulSoup(web_page, 'html.parser')
-		
+		pprint.pprint(youtube_path)
 		#parses through webpage and cleans data to find view count of video
-		spans = str(video_soup.find('span', attrs={"class":"stat view-count"}))
-		views_count = re.sub('[^0-9]','', spans)
-		youtuber_list.append(int(views_count))
-		
+		try:
+			spans = str(video_soup.find('span', attrs={"class":"stat view-count"}))
+			views_count = re.sub('[^0-9]','', spans)
+			youtuber_list.append(int(views_count))
+		except: 
+			spans = str(video_soup.find('div', 'watch-view-count'))
+			views_count = re.sub('[^0-9]','', spans)
+			youtuber_list.append(int(views_count))
 
 		#parses through webpage and cleans data to get likes counts
 		un_likes_amount = str(video_soup.find('button', title="I like this", type='button'))
@@ -224,10 +223,9 @@ def create_youtuber_csv(name, user, all_atts):
 			for index in range(len(all_atts)):
 				filewriter.writerow(all_atts[index])
 				index = index + 1 
-	
+	return all_atts
 	
 def insert_in_hue_dataset(user, all_atts):
-
 
 	if user in DK_YOUTUBER_NAMES:
 		file_path = DATA_FILE_PATH + DATASETS[1]
@@ -243,11 +241,77 @@ def insert_in_hue_dataset(user, all_atts):
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
 			filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
 			index = 1
+
 			for index in range(len(all_atts)):
-				filewriter.writerow(user, all_atts[index])
+				all_atts[index].insert(0, user)
+				filewriter.writerow(all_atts[index])
+				index = index + 1 
+	
+
+	if user in WP_YOUTUBER_NAMES:
+		file_path = DATA_FILE_PATH + DATASETS[0]
+
+		if not os.path.exists(os.path.dirname(file_path)):
+				try:
+					os.makedirs(os.path.dirname(file_path))
+				except OSError as exc: # Guard against race condition
+					if exc.errno != errno.EEXIST:
+						raise
+		
+		with open(file_path, 'a') as csvfile:
+			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
+			filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
+			index = 1
+
+			for index in range(len(all_atts)):
+				all_atts[index].insert(0, user)
+				filewriter.writerow(all_atts[index])
+				index = index + 1 
+	
+def insert_in_all_dataset(user, all_atts):
+	
+	if user in DK_YOUTUBER_NAMES:
+		file_path = DATA_FILE_PATH + DATASETS[2]
+
+		if not os.path.exists(os.path.dirname(file_path)):
+				try:
+					os.makedirs(os.path.dirname(file_path))
+				except OSError as exc: # Guard against race condition
+					if exc.errno != errno.EEXIST:
+						raise
+		
+		with open(file_path, 'a') as csvfile:
+			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
+			filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', 'type'])
+			index = 1
+
+
+			for index in range(len(all_atts)):
+				all_atts[index].append('DK')
+				filewriter.writerow(all_atts[index])
 				index = index + 1 
 
 
+	if user in WP_YOUTUBER_NAMES:
+		file_path = DATA_FILE_PATH + DATASETS[2]
+
+		if not os.path.exists(os.path.dirname(file_path)):
+				try:
+					os.makedirs(os.path.dirname(file_path))
+				except OSError as exc: # Guard against race condition
+					if exc.errno != errno.EEXIST:
+						raise
+		
+		with open(file_path, 'a') as csvfile:
+			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
+			filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
+			index = 1
+
+			for index in range(len(all_atts)):
+				all_atts[index].insert(0, user)
+				all_atts[index].append('WP')
+				filewriter.writerow(all_atts[index])
+				index = index + 1 
 
 
 if __name__ == "__main__":
