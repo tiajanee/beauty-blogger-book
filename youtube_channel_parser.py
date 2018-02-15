@@ -58,7 +58,7 @@ def get_youtube_videos(name):
     #debugged works, need to add comments
     youtube = create_channel_url(name)
     page = urlopen(youtube).read()
-    soup = BeautifulSoup(page,'html.parser')
+    soup = BeautifulSoup(page,'lxml')
     soup.prettify()
     #initialize empty list of links
     links = []
