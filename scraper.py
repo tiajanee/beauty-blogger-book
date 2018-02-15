@@ -6,6 +6,7 @@ import httplib2
 from urllib.request import urlopen
 from urllib.error import HTTPError
 from bs4 import BeautifulSoup, SoupStrainer
+import os
 
 PONY_SYNDROME = 'UCT-_4GqC-yLY1xtTHhwY0hA'
 JAMES_CHARLES = 'UCucot-Zp428OwkyRm2I7v2Q'
@@ -36,7 +37,6 @@ DK_YOUTUBER_NAMES = [
 URL = "https://www.youtube.com"
 
 #NOTE: some channel pages contain either a link with a channel path OR a user path, dependent on the channel
-
 CHANNEL = "/channel/"
 USER = "/user/"
 
@@ -44,7 +44,7 @@ USER = "/user/"
 REF = "/videos?sort=p&view=0&flow=grid"
 
 # DATASETS
-DATA_FILE_PATH = "/datasets"
+DATA_FILE_PATH = "datasets/"
 DATASETS = [
 	"wp.csv",
 	"dp.csv",
@@ -53,12 +53,14 @@ DATASETS = [
 	"DP/",
 ]
 
+DIR = '/Users/tiaking/Desktop/beauty_blogger-binder'
+
 def main():
 
 	#create_datasets(DATASETS)
 
 	# specify list
-	names = DK_YOUTUBER_NAMES   #+ WP_YOUTUBER_NAMES
+	names = DK_YOUTUBER_NAMES[:1]   #+ WP_YOUTUBER_NAMES
 	for name in names:
 		
 		
@@ -66,11 +68,9 @@ def main():
 		scraper = scrape_top_videos(url)
 		top_10 = get_top_10(url)
 		full_att_list = get_attributes(url)
-		
-		youtuber = create_youtuber_csv(url, name, full_att_list)
+		create_youtuber_csv(url, name, full_att_list)
 
-		# #	combine the datasets in WK/DP
-		# insert_in_hue_dataset(youtuber)
+		insert_in_hue_dataset(name, full_att_list)
 
 		# #combine the datasets in all
 		# insert_in_all_dataset(youtuber, url(name))
@@ -183,17 +183,70 @@ def get_attributes(name):
 	return all_atts
 
 
-# def create_youtuber_csv(url, all_atts):
-# 	#might not need to call this since i append to an empty list with all attributes in main
-# 	all_atts = get_attributes(name) 
+def create_youtuber_csv(name, user, all_atts):
+	#might not need to call this since i append to an empty list with all attributes in main
+	all_atts = get_attributes(name) 
 
-# 	csv_name =  '{}.csv'.format(name)
-# 	with open(csv, 'a') as csvfile:
-# 		filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
-# 		index = 1
-# 		for index in range(len(all_atts)):
-# 			filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
-# 			filewriter.writerow([all_atts][index])
+	if user in DK_YOUTUBER_NAMES:
+		
+		file_path = DATA_FILE_PATH + DATASETS[4] + '{}.csv'.format(user)
+		
+		if not os.path.exists(os.path.dirname(file_path)):
+			try:
+				os.makedirs(os.path.dirname(file_path))
+			except OSError as exc: # Guard against race condition
+				if exc.errno != errno.EEXIST:
+					raise
+		
+		with open(file_path, 'a') as csvfile:
+			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
+			filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
+			index = 1
+			for index in range(len(all_atts)):
+				filewriter.writerow(all_atts[index])
+				index = index + 1 
+	
+	if user in WP_YOUTUBER_NAMES:
+		
+		file_path = DATA_FILE_PATH + DATASETS[3] + '{}.csv'.format(user)
+		
+		if not os.path.exists(os.path.dirname(file_path)):
+			try:
+				os.makedirs(os.path.dirname(file_path))
+			except OSError as exc: # Guard against race condition
+				if exc.errno != errno.EEXIST:
+					raise
+		
+		with open(file_path, 'a') as csvfile:
+			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
+			filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
+			index = 1
+			for index in range(len(all_atts)):
+				filewriter.writerow(all_atts[index])
+				index = index + 1 
+	
+	
+def insert_in_hue_dataset(user, all_atts):
+
+
+	if user in DK_YOUTUBER_NAMES:
+		file_path = DATA_FILE_PATH + DATASETS[1]
+
+		if not os.path.exists(os.path.dirname(file_path)):
+				try:
+					os.makedirs(os.path.dirname(file_path))
+				except OSError as exc: # Guard against race condition
+					if exc.errno != errno.EEXIST:
+						raise
+		
+		with open(file_path, 'a') as csvfile:
+			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
+			filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
+			index = 1
+			for index in range(len(all_atts)):
+				filewriter.writerow(user, all_atts[index])
+				index = index + 1 
+
 
 
 
