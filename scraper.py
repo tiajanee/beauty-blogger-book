@@ -58,23 +58,16 @@ def main():
 	#create_datasets(DATASETS)
 
 	# specify list
-	names = DK_YOUTUBER_NAMES[:2]   #+ WP_YOUTUBER_NAMES
+	names = DK_YOUTUBER_NAMES   #+ WP_YOUTUBER_NAMES
 	for name in names:
 		
-		# get top ten video links
 		
 		url = _url(name)
 		scraper = scrape_top_videos(url)
 		top_10 = get_top_10(url)
-		pprint.pprint(top_10)
+		full_att_list = get_attributes(url)
 		
-		all_atts = []
-
-		for link in top_10:
-			link = URL + link #should have been 10 user video links, might be more?
-			all_atts.append(get_attributes(link)) #was saving like a variable instead of a list, test this
-		
-		# youtuber = create_youtuber_csv(name, all_atts)
+		youtuber = create_youtuber_csv(url, name, full_att_list)
 
 		# #	combine the datasets in WK/DP
 		# insert_in_hue_dataset(youtuber)
@@ -143,77 +136,64 @@ def get_top_10(name):
 
  	'''
 	
-	#the bug might be catalized here, maybe the links I scraped weren't all user video links
 	popular_vid_links = scrape_top_videos(name)
 	index = 0
 	ten_links = []
 	for index in range(10):
 		ten_links.append(popular_vid_links[index])
-		index =  index + 1 
+		index =  index + 1
 	return ten_links
 
 def get_attributes(name):
 
-	#bug: scraping links of related videos for views of video link instead of links provided in list
-	links = get_top_10(name)
-
+# 	#bug: scraping links of related videos for views of video link instead of links provided in list
+	videos = get_top_10(name)
 	#empty list created to hold list of video attributes(views, likes, dislikes)
 	all_atts = []
-
-	for link in links:
-		print(link)
-		youtube_path = URL + link
-		all_atts.append(youtube_path)
+	for video in videos:
+		youtuber_list = []
+		youtube_path = URL + video
+		youtuber_list.append(youtube_path)
 		web_page = urlopen(youtube_path)
-		video_soup = BeautifulSoup(web_page, 'lxml')
-		video_soup.prettify()
+		video_soup = BeautifulSoup(web_page, 'html.parser')
 		
 		#parses through webpage and cleans data to find view count of video
-		spans = str(video_soup.find_all('span', {'class' : "view-count style-scope yt-view-count-renderer"}))
-		print(spans)
+		spans = str(video_soup.find('span', attrs={"class":"stat view-count"}))
+		views_count = re.sub('[^0-9]','', spans)
+		youtuber_list.append(int(views_count))
+		
 
-		#takes only the text in the span element
-		# lines = [span.get_text() for span in spans]
-		# print(lines)
+		#parses through webpage and cleans data to get likes counts
+		un_likes_amount = str(video_soup.find('button', title="I like this", type='button'))
+		dirty_likes_count =  re.sub('[^0-9,]',' ', un_likes_amount)
+		clean_likes_count = re.sub(',', '', dirty_likes_count).split()[0]
 
-		#cleaning the text of symbols and integers
-		dirty_views_count = re.sub('[^0-9]','', spans)
-		print(dirty_views_count)
+		youtuber_list.append(int(clean_likes_count))
+	
 
-		#returns a double count, gets rid of the repeat amount
-		clean_views_count = re.sub(',', '', dirty_views_count)
-		print(clean_views_count)
-		all_atts.append(clean_views_count)
+ 		#parses through webpage and cleans data to get dislike counts
+
+		un_dislike_count = str(video_soup.find('button', title="I dislike this", type="button"))
+		dirty_dislike_count =  re.sub('[^0-9,]',' ', un_dislike_count)
+		clean_dislike_count = re.sub(',', '', dirty_dislike_count).split()[0]
+		youtuber_list.append(int(clean_dislike_count))
+
+		all_atts.append(youtuber_list)
 
 	return all_atts
 
 
-	# 	#parses through webpage and cleans data to get likes counts
-	# 	un_likes_amount = str(soup.find('button', title="I like this", type='button'))
-	# 	likes_count =  re.sub('[^0-9,]',' ', un_likes_amount)
-	# 	likes_count = re.sub(',', '', likes_count).split()
-	# 	all_atts.append(likes_count)
-	
-
-	# 	#parses through webpage and cleans data to get dislike counts
-	# 	un_dislike_count = str(soup.find('button', title="I dislike this", type="button"))
-	# 	dislike_count =  re.sub('[^0-9,]',' ', un_dislike_count)
-	# 	dislike_count = re.sub(',', '', dislike_count).split()
-	# 	all_atts.append(dislike_count)
-
-
-	# return all_atts
-
-# def create_user_csv(name, all_atts):
+# def create_youtuber_csv(url, all_atts):
 # 	#might not need to call this since i append to an empty list with all attributes in main
 # 	all_atts = get_attributes(name) 
 
-	
-# 	with open('{}.csv', 'a').format(name) as csvfile:
-#             filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
-#             filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
-#             print(name)
-#           	filewriter.writerow([all_atts])
+# 	csv_name =  '{}.csv'.format(name)
+# 	with open(csv, 'a') as csvfile:
+# 		filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
+# 		index = 1
+# 		for index in range(len(all_atts)):
+# 			filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
+# 			filewriter.writerow([all_atts][index])
 
 
 
