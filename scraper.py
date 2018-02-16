@@ -60,7 +60,7 @@ def main():
 	#create_datasets(DATASETS)
 
 	# specify list
-	names = DK_YOUTUBER_NAMES[:3] + WP_YOUTUBER_NAMES[:3]
+	names =  DK_YOUTUBER_NAMES[11:]
 	for name in names:
 		
 		
@@ -151,7 +151,6 @@ def get_attributes(name):
 		youtuber_list.append(youtube_path)
 		web_page = urlopen(youtube_path)
 		video_soup = BeautifulSoup(web_page, 'html.parser')
-		pprint.pprint(youtube_path)
 		#parses through webpage and cleans data to find view count of video
 		try:
 			spans = str(video_soup.find('span', attrs={"class":"stat view-count"}))
@@ -239,7 +238,9 @@ def insert_in_hue_dataset(user, all_atts):
 		
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
+			if os.path.getsize(file_path) == 0:
+				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
+
 			index = 1
 
 			for index in range(len(all_atts)):
@@ -260,7 +261,9 @@ def insert_in_hue_dataset(user, all_atts):
 		
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
+			if os.path.getsize(file_path) == 0:
+				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
+			#filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
 			index = 1
 
 			for index in range(len(all_atts)):
@@ -282,7 +285,9 @@ def insert_in_all_dataset(user, all_atts):
 		
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', 'type'])
+			if os.path.getsize(file_path) == 0:
+				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', 'type'])
+
 			index = 1
 
 
@@ -304,11 +309,12 @@ def insert_in_all_dataset(user, all_atts):
 		
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
+			if os.path.getsize(file_path) == 0:
+				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', 'type'])
+			
 			index = 1
 
 			for index in range(len(all_atts)):
-				all_atts[index].insert(0, user)
 				all_atts[index].append('WP')
 				filewriter.writerow(all_atts[index])
 				index = index + 1 
