@@ -26,11 +26,10 @@ WP_YOUTUBER_NAMES = [
 
 # 25 youtube handles og bloggers that are disenfranchised in beauty community/darker skinned (based on my perception)
 DK_YOUTUBER_NAMES = [
-	'iamkareno', 'theepatrickstarrr', 'wwwengie', 'bubzbeauty', 
-	'itsalissaweekly', 'mylifeaseva', 'Dope2111', PONY_SYNDROME, 'MichellePhan', 'itsmyRayeRaye', 
-	'BritPopPrincess', 'DulceCandy87', 'AndreasChoice', 'macbarbie07', 'ThatsHeart', 
+	'itsalissaweekly', 'mylifeaseva', 'itsmyRayeRaye', 
+	'BritPopPrincess', 'AndreasChoice',
 	'SmartistaBeauty', NYMA_TANG, 'beautycrush', ALYSSA_FOREVER, JASMINE_BROWN, 'Cydbeats', 
-	'Irishcel507', 'clothesencounters', 'TTLYTEALA', 'makeupbytinayong'
+	'Irishcel507', 'TTLYTEALA',
 ]
 
 # YOUTUBE URLS
@@ -59,13 +58,12 @@ def main():
 
 	#create_datasets(DATASETS)
 
-	# specify list
-	names =  DK_YOUTUBER_NAMES[11:]
+	#saves boths lists of names of to a variable to be looped through each function
+	names =  DK_YOUTUBER_NAMES[:3]
 	for name in names:
 		
-		
 		url = _url(name)
-		scraper = scrape_top_videos(url)
+		#scraper = scrape_top_videos(url)
 		top_10 = get_top_10(url)
 		full_att_list = get_attributes(url)
 		create_youtuber_csv(url, name, full_att_list)
@@ -73,10 +71,7 @@ def main():
 		insert_in_all_dataset(name, full_att_list)
 
 def scrape_top_videos(name):
-	'''
-	gets all embedded video links in user's channel, appended in desc popularity
-
-	'''
+	'''gets all embedded video links in user's channel, appended in desc popularity'''
 
 	#reads in HTML to parse
 	page = urlopen(name).read()
@@ -108,32 +103,30 @@ def scrape_top_videos(name):
 	#gets rid of all repeat links retreived from channel page
 	unique_links = repeat_links[::2]
 
+
 	return unique_links
 
 
 def _url(name):
-	'''
-	Create url from name 
+	'''Create url from name'''
 
-	'''
-
-	#debugged
+	#concatenates file path catered to user channel to access their video links
 	if name[0] is "U":
 		url = URL + CHANNEL + name + REF 
 	else:
 		url = URL + USER + name + REF
+	
 	return url
 
 
 def get_top_10(name):
-	'''
-	get top 10 most popular videos for each name
-
- 	'''
+	'''get top 10 most popular videos for each name'''
 	
 	popular_vid_links = scrape_top_videos(name)
 	index = 0
 	ten_links = []
+	
+	#for loop to only extract first 10 videos
 	for index in range(10):
 		ten_links.append(popular_vid_links[index])
 		index =  index + 1
@@ -141,7 +134,6 @@ def get_top_10(name):
 
 def get_attributes(name):
 
-# 	#bug: scraping links of related videos for views of video link instead of links provided in list
 	videos = get_top_10(name)
 	#empty list created to hold list of video attributes(views, likes, dislikes)
 	all_atts = []
@@ -170,7 +162,6 @@ def get_attributes(name):
 	
 
  		#parses through webpage and cleans data to get dislike counts
-
 		un_dislike_count = str(video_soup.find('button', title="I dislike this", type="button"))
 		dirty_dislike_count =  re.sub('[^0-9,]',' ', un_dislike_count)
 		clean_dislike_count = re.sub(',', '', dirty_dislike_count).split()[0]
@@ -182,13 +173,15 @@ def get_attributes(name):
 
 
 def create_youtuber_csv(name, user, all_atts):
-	#might not need to call this since i append to an empty list with all attributes in main
+	#concatenates top_10_links to an empty CSV for every youtuber
 	all_atts = get_attributes(name) 
 
 	if user in DK_YOUTUBER_NAMES:
 		
+		#creating file path
 		file_path = DATA_FILE_PATH + DATASETS[4] + '{}.csv'.format(user)
 		
+		#ensures that function does not create a new csv for every link instead of appending
 		if not os.path.exists(os.path.dirname(file_path)):
 			try:
 				os.makedirs(os.path.dirname(file_path))
@@ -196,6 +189,7 @@ def create_youtuber_csv(name, user, all_atts):
 				if exc.errno != errno.EEXIST:
 					raise
 		
+		#creating the CSV, and writing the headers
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
 			filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
@@ -206,19 +200,24 @@ def create_youtuber_csv(name, user, all_atts):
 	
 	if user in WP_YOUTUBER_NAMES:
 		
+		#creating correct file path
 		file_path = DATA_FILE_PATH + DATASETS[3] + '{}.csv'.format(user)
 		
+		#ensures that function does not create a new csv for every link instead of appending
 		if not os.path.exists(os.path.dirname(file_path)):
 			try:
 				os.makedirs(os.path.dirname(file_path))
-			except OSError as exc: # Guard against race condition
+			except OSError as exc:
 				if exc.errno != errno.EEXIST:
 					raise
-		
+			
+		#creating the CSV, and writing the headers
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
 			filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
 			index = 1
+
+			#append all attributes to CSV
 			for index in range(len(all_atts)):
 				filewriter.writerow(all_atts[index])
 				index = index + 1 
@@ -232,7 +231,7 @@ def insert_in_hue_dataset(user, all_atts):
 		if not os.path.exists(os.path.dirname(file_path)):
 				try:
 					os.makedirs(os.path.dirname(file_path))
-				except OSError as exc: # Guard against race condition
+				except OSError as exc: 
 					if exc.errno != errno.EEXIST:
 						raise
 		
@@ -255,7 +254,7 @@ def insert_in_hue_dataset(user, all_atts):
 		if not os.path.exists(os.path.dirname(file_path)):
 				try:
 					os.makedirs(os.path.dirname(file_path))
-				except OSError as exc: # Guard against race condition
+				except OSError as exc: 
 					if exc.errno != errno.EEXIST:
 						raise
 		
@@ -263,7 +262,6 @@ def insert_in_hue_dataset(user, all_atts):
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
 			if os.path.getsize(file_path) == 0:
 				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
-			#filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
 			index = 1
 
 			for index in range(len(all_atts)):
@@ -318,6 +316,7 @@ def insert_in_all_dataset(user, all_atts):
 				all_atts[index].append('WP')
 				filewriter.writerow(all_atts[index])
 				index = index + 1 
+
 
 
 if __name__ == "__main__":
