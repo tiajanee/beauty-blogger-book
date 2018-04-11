@@ -17,19 +17,20 @@ JASMINE_BROWN = 'UCw95JvOs39snnMPkYs-6Sog'
 
 # 25 youtube handles of bloggers that are white/white-passing (based on my perception)
 WP_YOUTUBER_NAMES = [
-	'jeffreestar', 'Jaclynhill1', 'macbby11', 'nikkietutorials', 'laura88lee', 
+	'jeffreestar', 'Jaclynhill1', 'macbby11', 'nikkietutorials', 'oliviajadebeauty', 
 	'pixiwoo', 'kandeejohnson', 'zoella280390', 'makeupgeektv', 'stilaBabe09', 
 	'shaaanxo', 'ChloeMorello', 'Laurenbeautyy', 'Missglamorazzi', 'AllThatGlitters21', 
-	'Juicystar07', 'MannyMua733', 'GlamLifeGuru', 'CutiePieMarzia', 'KathleenLights',
-	'pixi2woo', 'CarliBel55', JAMES_CHARLES, 'HauteBrilliance', 'SierraMarieMakeup'
+	'Juicystar07', 'beautybybrittneyx', 'GlamLifeGuru', 'CutiePieMarzia', 'KathleenLights',
+	'grav3yardgirl', 'Tesschristine123', JAMES_CHARLES, 'HauteBrilliance', 'SierraMarieMakeup'
 ]
 
 # 25 youtube handles og bloggers that are disenfranchised in beauty community/darker skinned (based on my perception)
 DK_YOUTUBER_NAMES = [
-	'itsalissaweekly', 'mylifeaseva', 'itsmyRayeRaye', 
-	'BritPopPrincess', 'AndreasChoice',
+	'itsalissaweekly', 'mylifeaseva', 'itsmyRayeRaye','BritPopPrincess', 'AndreasChoice',
 	'SmartistaBeauty', NYMA_TANG, 'beautycrush', ALYSSA_FOREVER, JASMINE_BROWN, 'Cydbeats', 
-	'Irishcel507', 'TTLYTEALA',
+	'Irishcel507', 'TTLYTEALA', 'lilpumpkinpie05', 'luhhsettyxo', 'BeautyByKelliee', 'yellachyk1', 
+	'RavenElyseTV', 'MsAaliyahJay', 'beautybyjj', 'peakmill', 'teasedblackpearlz', 'glamtwinz334',
+	'backsyncfan', 'Naptural85'
 ]
 
 # YOUTUBE URLS
@@ -45,11 +46,11 @@ REF = "/videos?sort=p&view=0&flow=grid"
 # DATASETS
 DATA_FILE_PATH = "datasets/"
 DATASETS = [
-	"wp.csv",
-	"dp.csv",
+	"white.csv",
+	"black.csv",
 	"all.csv",
-	"WP/",
-	"DP/",
+	"WB/",
+	"DB/",
 ]
 
 DIR = '/Users/tiaking/Desktop/beauty_blogger-binder'
@@ -61,11 +62,10 @@ def main():
 	#saves boths lists of names of to a variable to be looped through each function
 	names =  DK_YOUTUBER_NAMES[:3]
 	for name in names:
-		
 		url = _url(name)
-		#scraper = scrape_top_videos(url)
 		top_10 = get_top_10(url)
 		full_att_list = get_attributes(url)
+		print(full_att_list)
 		create_youtuber_csv(url, name, full_att_list)
 		insert_in_hue_dataset(name, full_att_list)
 		insert_in_all_dataset(name, full_att_list)
@@ -118,6 +118,21 @@ def _url(name):
 	
 	return url
 
+def get_subscribers(name):
+
+	if name[0] is "U":
+		channel_url = URL + CHANNEL + name
+	else:
+		channel_url = URL + USER + name
+
+	channel = urlopen(channel_url).read()
+	soup = BeautifulSoup(channel,'html.parser')
+
+	dirty_subs = soup.find('span', attrs={"class":"yt-subscription-button-subscriber-count-branded-horizontal subscribed yt-uix-tooltip"})['title']
+	subs = int(re.sub('[^0-9]','', dirty_subs))
+
+	return subs
+
 
 def get_top_10(name):
 	'''get top 10 most popular videos for each name'''
@@ -167,6 +182,9 @@ def get_attributes(name):
 		clean_dislike_count = re.sub(',', '', dirty_dislike_count).split()[0]
 		youtuber_list.append(int(clean_dislike_count))
 
+		subscribers = get_subscribers(name)
+		youtuber_list.append(subscribers)
+
 		all_atts.append(youtuber_list)
 
 	return all_atts
@@ -192,7 +210,7 @@ def create_youtuber_csv(name, user, all_atts):
 		#creating the CSV, and writing the headers
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
+			filewriter.writerow(['video_link', 'views', 'likes', 'dislikes', 'subscribers'])
 			index = 1
 			for index in range(len(all_atts)):
 				filewriter.writerow(all_atts[index])
@@ -214,7 +232,7 @@ def create_youtuber_csv(name, user, all_atts):
 		#creating the CSV, and writing the headers
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			filewriter.writerow(['video_link', 'views', 'likes', 'dislikes'])
+			filewriter.writerow(['video_link', 'views', 'likes', 'dislikes', 'subscribers'])
 			index = 1
 
 			#append all attributes to CSV
@@ -238,7 +256,7 @@ def insert_in_hue_dataset(user, all_atts):
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
 			if os.path.getsize(file_path) == 0:
-				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
+				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', 'subscribers'])
 
 			index = 1
 
@@ -261,7 +279,7 @@ def insert_in_hue_dataset(user, all_atts):
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
 			if os.path.getsize(file_path) == 0:
-				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes'])
+				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', "subscribers"])
 			index = 1
 
 			for index in range(len(all_atts)):
@@ -284,13 +302,13 @@ def insert_in_all_dataset(user, all_atts):
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
 			if os.path.getsize(file_path) == 0:
-				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', 'type'])
+				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', 'subscribers', 'type'])
 
 			index = 1
 
 
 			for index in range(len(all_atts)):
-				all_atts[index].append('DK')
+				all_atts[index].append('black')
 				filewriter.writerow(all_atts[index])
 				index = index + 1 
 
@@ -308,12 +326,12 @@ def insert_in_all_dataset(user, all_atts):
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
 			if os.path.getsize(file_path) == 0:
-				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', 'type'])
+				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', 'subscribers', 'type'])
 			
 			index = 1
 
 			for index in range(len(all_atts)):
-				all_atts[index].append('WP')
+				all_atts[index].append('white')
 				filewriter.writerow(all_atts[index])
 				index = index + 1 
 
