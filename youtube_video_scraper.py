@@ -41,17 +41,17 @@ for _ in range(0, 10):
 
 #INDIVIDUAL YOUTUBE LINK PARSING
 
-youtube_path = "https://www.youtube.com/user/beautybybrittneyx" 
+youtube_path = "https://www.youtube.com/watch?v=2FQReUmJRwg" 
 page = urlopen(youtube_path)
 soup = BeautifulSoup(page, 'html.parser')
 soup.prettify()
 
-# print(soup)
+print(soup)
 
-results = soup.find('span', attrs={"class":"yt-subscription-button-subscriber-count-branded-horizontal subscribed yt-uix-tooltip"})['title']
-subscribers = re.sub('[^0-9]','', results)
+spans = str(soup.find('div', {"class":"watch-view-count"}))
+views_count = re.sub('[^0-9]','', spans)
 
-print(subscribers)
+print(views_count)
 #parses through webpage and cleans data to find view count of video
 # un_views_count = soup.find_all('div',{'id':'count'})
 # print(un_views_count)
