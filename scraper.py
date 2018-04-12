@@ -65,7 +65,6 @@ def main():
 		url = _url(name)
 		top_10 = get_top_10(url)
 		full_att_list = get_attributes(url)
-		print(full_att_list)
 		create_youtuber_csv(url, name, full_att_list)
 		insert_in_hue_dataset(name, full_att_list)
 		insert_in_all_dataset(name, full_att_list)
@@ -182,9 +181,6 @@ def get_attributes(name):
 		clean_dislike_count = re.sub(',', '', dirty_dislike_count).split()[0]
 		youtuber_list.append(int(clean_dislike_count))
 
-		subscribers = get_subscribers(name)
-		youtuber_list.append(subscribers)
-
 		all_atts.append(youtuber_list)
 
 	return all_atts
@@ -260,9 +256,12 @@ def insert_in_hue_dataset(user, all_atts):
 
 			index = 1
 
-			for index in range(len(all_atts)):
+			subscribers = get_subscribers(user)
+
+
+			for index in range(len(all_atts) + 1):
 				all_atts[index].insert(0, user)
-				filewriter.writerow(all_atts[index])
+				filewriter.writerow(all_atts[index] + subscribers)
 				index = index + 1 
 	
 
@@ -282,9 +281,12 @@ def insert_in_hue_dataset(user, all_atts):
 				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', "subscribers"])
 			index = 1
 
-			for index in range(len(all_atts)):
+			subscribers = get_subscribers(user)
+
+
+			for index in range(len(all_atts) + 1):
 				all_atts[index].insert(0, user)
-				filewriter.writerow(all_atts[index])
+				filewriter.writerow(all_atts[index] + subscribers)
 				index = index + 1 
 	
 def insert_in_all_dataset(user, all_atts):
@@ -306,8 +308,10 @@ def insert_in_all_dataset(user, all_atts):
 
 			index = 1
 
+			subscribers = get_subscribers(user)
 
 			for index in range(len(all_atts)):
+				all_atts[index].append(subscribers)
 				all_atts[index].append('black')
 				filewriter.writerow(all_atts[index])
 				index = index + 1 
@@ -330,7 +334,11 @@ def insert_in_all_dataset(user, all_atts):
 			
 			index = 1
 
+			subscribers = get_subscribers(user)
+
+
 			for index in range(len(all_atts)):
+				all_atts[index].append(subscribers)
 				all_atts[index].append('white')
 				filewriter.writerow(all_atts[index])
 				index = index + 1 
