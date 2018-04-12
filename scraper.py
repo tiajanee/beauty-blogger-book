@@ -17,18 +17,18 @@ JASMINE_BROWN = 'UCw95JvOs39snnMPkYs-6Sog'
 
 # 25 youtube handles of bloggers that are white/white-passing (based on my perception)
 WP_YOUTUBER_NAMES = [
-	'jeffreestar', 'Jaclynhill1', 'macbby11', 'nikkietutorials', 'oliviajadebeauty', 
-	'pixiwoo', 'kandeejohnson', 'zoella280390', 'makeupgeektv', 'stilaBabe09', 
+	'jeffreestar', 'Jaclynhill1', 'nikkietutorials', 'oliviajadebeauty', 
+	'pixiwoo', 'kandeejohnson', 'zoella280390', 'makeupgeektv', 
 	'shaaanxo', 'ChloeMorello', 'Laurenbeautyy', 'Missglamorazzi', 'AllThatGlitters21', 
-	'Juicystar07', 'beautybybrittneyx', 'GlamLifeGuru', 'CutiePieMarzia', 'KathleenLights',
-	'grav3yardgirl', 'Tesschristine123', JAMES_CHARLES, 'HauteBrilliance', 'SierraMarieMakeup'
+	'Juicystar07', 'beautybybrittneyx', 'GlamLifeGuru', 'CutiePieMarzia',
+	'grav3yardgirl', JAMES_CHARLES, 'HauteBrilliance', 'lisaeldridgedotcom'
 ]
 
 # 25 youtube handles og bloggers that are disenfranchised in beauty community/darker skinned (based on my perception)
 DK_YOUTUBER_NAMES = [
-	'itsalissaweekly', 'mylifeaseva', 'itsmyRayeRaye','BritPopPrincess', 'AndreasChoice',
+	'itsalissaweekly', 'itsmyRayeRaye','BritPopPrincess', 'AndreasChoice',
 	'SmartistaBeauty', NYMA_TANG, 'beautycrush', ALYSSA_FOREVER, JASMINE_BROWN, 'Cydbeats', 
-	'Irishcel507', 'TTLYTEALA', 'lilpumpkinpie05', 'luhhsettyxo', 'BeautyByKelliee', 'yellachyk1', 
+	'Irishcel507', 'lilpumpkinpie05', 'luhhsettyxo', 'BeautyByKelliee', 'yellachyk1', 
 	'RavenElyseTV', 'MsAaliyahJay', 'beautybyjj', 'peakmill', 'teasedblackpearlz', 'glamtwinz334',
 	'backsyncfan', 'Naptural85'
 ]
@@ -49,8 +49,8 @@ DATASETS = [
 	"white.csv",
 	"black.csv",
 	"all.csv",
-	"WB/",
-	"DB/",
+	"WP/",
+	"BP/",
 ]
 
 DIR = '/Users/tiaking/Desktop/beauty_blogger-binder'
@@ -60,11 +60,11 @@ def main():
 	#create_datasets(DATASETS)
 
 	#saves boths lists of names of to a variable to be looped through each function
-	names =  DK_YOUTUBER_NAMES[:3]
+	names = WP_YOUTUBER_NAMES
 	for name in names:
 		url = _url(name)
 		top_10 = get_top_10(url)
-		full_att_list = get_attributes(url)
+		full_att_list = get_attributes(url, name)
 		create_youtuber_csv(url, name, full_att_list)
 		insert_in_hue_dataset(name, full_att_list)
 		insert_in_all_dataset(name, full_att_list)
@@ -146,8 +146,8 @@ def get_top_10(name):
 		index =  index + 1
 	return ten_links
 
-def get_attributes(name):
-
+def get_attributes(name, user):
+	subscribers = get_subscribers(user)
 	videos = get_top_10(name)
 	#empty list created to hold list of video attributes(views, likes, dislikes)
 	all_atts = []
@@ -159,7 +159,7 @@ def get_attributes(name):
 		video_soup = BeautifulSoup(web_page, 'html.parser')
 		#parses through webpage and cleans data to find view count of video
 		try:
-			spans = str(video_soup.find('span', attrs={"class":"stat view-count"}))
+			spans = str(soup.find('div', {"class":"watch-view-count"}))
 			views_count = re.sub('[^0-9]','', spans)
 			youtuber_list.append(int(views_count))
 		except: 
@@ -181,6 +181,8 @@ def get_attributes(name):
 		clean_dislike_count = re.sub(',', '', dirty_dislike_count).split()[0]
 		youtuber_list.append(int(clean_dislike_count))
 
+		youtuber_list.append(subscribers)
+
 		all_atts.append(youtuber_list)
 
 	return all_atts
@@ -188,7 +190,7 @@ def get_attributes(name):
 
 def create_youtuber_csv(name, user, all_atts):
 	#concatenates top_10_links to an empty CSV for every youtuber
-	all_atts = get_attributes(name) 
+	all_atts = get_attributes(name, user) 
 
 	if user in DK_YOUTUBER_NAMES:
 		
@@ -256,12 +258,11 @@ def insert_in_hue_dataset(user, all_atts):
 
 			index = 1
 
-			subscribers = get_subscribers(user)
 
 
-			for index in range(len(all_atts) + 1):
+			for index in range(len(all_atts)):
 				all_atts[index].insert(0, user)
-				filewriter.writerow(all_atts[index] + subscribers)
+				filewriter.writerow(all_atts[index])
 				index = index + 1 
 	
 
@@ -278,17 +279,17 @@ def insert_in_hue_dataset(user, all_atts):
 		with open(file_path, 'a') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter =",", quotechar='|', quoting=csv.QUOTE_MINIMAL)
 			if os.path.getsize(file_path) == 0:
-				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', "subscribers"])
+				filewriter.writerow(['channel','video_link', 'views', 'likes', 'dislikes', 'subscribers'])
 			index = 1
 
-			subscribers = get_subscribers(user)
 
 
-			for index in range(len(all_atts) + 1):
+			for index in range(len(all_atts)):
 				all_atts[index].insert(0, user)
-				filewriter.writerow(all_atts[index] + subscribers)
+				filewriter.writerow(all_atts[index])
 				index = index + 1 
 	
+
 def insert_in_all_dataset(user, all_atts):
 	
 	if user in DK_YOUTUBER_NAMES:
@@ -308,10 +309,8 @@ def insert_in_all_dataset(user, all_atts):
 
 			index = 1
 
-			subscribers = get_subscribers(user)
 
 			for index in range(len(all_atts)):
-				all_atts[index].append(subscribers)
 				all_atts[index].append('black')
 				filewriter.writerow(all_atts[index])
 				index = index + 1 
@@ -334,11 +333,9 @@ def insert_in_all_dataset(user, all_atts):
 			
 			index = 1
 
-			subscribers = get_subscribers(user)
 
 
 			for index in range(len(all_atts)):
-				all_atts[index].append(subscribers)
 				all_atts[index].append('white')
 				filewriter.writerow(all_atts[index])
 				index = index + 1 
